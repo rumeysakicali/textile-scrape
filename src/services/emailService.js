@@ -84,23 +84,21 @@ class EmailService {
 
   /**
    * Extract email from company data
-   * Note: This is a placeholder - actual email extraction would require
-   * scraping the company website or using additional APIs
+   * TODO: Implement email extraction by scraping company websites
+   * This would require:
+   * 1. Visiting the company website
+   * 2. Scraping contact page for email addresses
+   * 3. Using pattern matching to find email addresses
+   * 
+   * For now, this returns null as email extraction requires additional
+   * web scraping implementation.
+   * 
    * @param {Object} company - Company object
    * @returns {string|null} Email address or null
    */
   extractEmailFromCompany(company) {
-    // In a real implementation, you would:
-    // 1. Visit the company website
-    // 2. Scrape contact page for email
-    // 3. Use pattern matching to find email addresses
-    // 
-    // For demonstration, we'll use a placeholder approach
-    if (company.website) {
-      // Placeholder: would need to scrape the website
-      // For now, return null to indicate email extraction is needed
-      return null;
-    }
+    // Placeholder: email extraction not implemented
+    // Would need web scraping library like cheerio or puppeteer
     return null;
   }
 

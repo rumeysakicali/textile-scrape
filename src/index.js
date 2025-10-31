@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const googleMapsService = require('./services/googleMapsService');
 const emailService = require('./services/emailService');
-const { saveToFile, loadFromFile } = require('./utils/fileHandler');
+const { saveToFile } = require('./utils/fileHandler');
 
 async function main() {
   try {

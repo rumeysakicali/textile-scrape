@@ -18,7 +18,12 @@ class GoogleMapsService {
     try {
       const location = process.env.SEARCH_LOCATION || 'Istanbul, Turkey';
       const keyword = process.env.SEARCH_KEYWORD || 'textile fabric company';
-      const radius = parseInt(process.env.SEARCH_RADIUS || '50000');
+      const radiusEnv = process.env.SEARCH_RADIUS || '50000';
+      const radius = parseInt(radiusEnv, 10);
+      
+      if (isNaN(radius) || radius <= 0) {
+        throw new Error(`Invalid SEARCH_RADIUS: ${radiusEnv}. Must be a positive number.`);
+      }
 
       console.log(`Searching for: ${keyword}`);
       console.log(`Location: ${location}`);
