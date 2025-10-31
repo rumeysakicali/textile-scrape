@@ -4,6 +4,21 @@ const googleMapsService = require('./services/googleMapsService');
 const emailService = require('./services/emailService');
 const { saveToFile } = require('./utils/fileHandler');
 
+// Constants for company filtering
+const OPERATIONAL_STATUS = 'OPERATIONAL';
+
+/**
+ * Check if a company is considered active
+ * @param {Object} company - Company object
+ * @returns {boolean} True if company is active
+ */
+function isActiveCompany(company) {
+  const hasOperationalStatus = company.business_status === OPERATIONAL_STATUS;
+  const hasReviews = company.rating || company.user_ratings_total > 0;
+  
+  return hasOperationalStatus && hasReviews;
+}
+
 async function main() {
   try {
     console.log('🚀 Starting Textile Company Scraper...\n');
@@ -15,14 +30,7 @@ async function main() {
 
     // Step 2: Filter active companies
     console.log('🔍 Filtering active companies...');
-    const activeCompanies = companies.filter(company => {
-      // A company is considered active if it has:
-      // - business_status === 'OPERATIONAL'
-      // - rating (has reviews)
-      // - opening_hours information
-      return company.business_status === 'OPERATIONAL' && 
-             (company.rating || company.user_ratings_total > 0);
-    });
+    const activeCompanies = companies.filter(isActiveCompany);
     console.log(`✅ Found ${activeCompanies.length} active companies\n`);
 
     // Step 3: Save data

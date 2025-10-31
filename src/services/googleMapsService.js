@@ -19,7 +19,7 @@ class GoogleMapsService {
       const location = process.env.SEARCH_LOCATION || 'Istanbul, Turkey';
       const keyword = process.env.SEARCH_KEYWORD || 'textile fabric company';
       const radiusEnv = process.env.SEARCH_RADIUS || '50000';
-      const radius = parseInt(radiusEnv, 10);
+      const radius = Number(radiusEnv);
       
       if (isNaN(radius) || radius <= 0) {
         throw new Error(`Invalid SEARCH_RADIUS: ${radiusEnv}. Must be a positive number.`);
@@ -73,8 +73,8 @@ class GoogleMapsService {
             ...details,
           });
           
-          // Small delay to avoid rate limiting
-          await this.delay(100);
+          // Delay to avoid rate limiting (200ms between requests)
+          await this.delay(200);
         } catch (error) {
           console.error(`Error getting details for ${place.name}:`, error.message);
         }
