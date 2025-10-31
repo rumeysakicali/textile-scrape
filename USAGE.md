@@ -88,10 +88,15 @@ Coordinates: 41.0082, 28.9784
 ✅ Data saved successfully
 
 📧 Sending emails to active companies...
-⏭️  Skipping ABC Textile - no email found
-⏭️  Skipping XYZ Fabrics - no email found
+🔍 Extracting email from https://www.abctextile.com...
+✉️  Found email: info@abctextile.com
+✅ Email sent to ABC Textile (info@abctextile.com)
+🔍 Extracting email from https://www.xyztextile.com...
+✉️  Found email: contact@xyztextile.com
+✅ Email sent to XYZ Textile (contact@xyztextile.com)
+⏭️  Skipping DEF Fabrics - no email found
 ...
-✅ Sent 0 emails successfully
+✅ Sent 8 emails successfully
 ❌ Failed to send 0 emails
 
 ✨ Process completed successfully!
@@ -145,11 +150,42 @@ Same format, but only includes companies with:
 
 ### Issue: No emails sent
 **Solution:** 
-- The current implementation requires email extraction to be implemented
-- Check the TODO in `src/services/emailService.js`
-- Email addresses are not provided by Google Maps API
+- Make sure companies have websites in their Google Maps data
+- The application automatically extracts emails from company websites
+- If a website doesn't contain email addresses, that company will be skipped
+- Check the console output to see which emails were found
+- Email credentials must be configured in `.env` file
 
 ## Advanced Usage
+
+### Email Extraction Feature
+
+The application automatically extracts email addresses from company websites:
+
+**How it works:**
+1. For each company found on Google Maps, the app checks if they have a website
+2. If a website exists, the app visits it and scans for email addresses
+3. Email addresses are extracted from:
+   - `mailto:` links
+   - Plain text on the page (contact info, footer, etc.)
+4. The app prioritizes contact emails like:
+   - `info@company.com`
+   - `contact@company.com`
+   - `sales@company.com`
+   - `support@company.com`
+5. Invalid emails are filtered out (example.com, image files, etc.)
+
+**What to expect:**
+- Some websites may not have email addresses → company will be skipped
+- Some websites may be inaccessible (timeout, DNS errors) → logged and skipped
+- Email extraction includes a 500ms delay per website to be respectful
+- The first valid email found is used for communication
+
+**Example output:**
+```
+🔍 Extracting email from https://textile-company.com...
+✉️  Found email: info@textile-company.com
+```
 
 ### Running Demo Mode
 ```bash

@@ -7,6 +7,7 @@ A Node.js application that searches for textile fabric companies using Google Ma
 - 🔍 Search textile companies using Google Maps Places API
 - 📊 Collect detailed company information (address, phone, website, ratings)
 - ✅ Filter active companies based on business status and reviews
+- 🌐 Automatically extract email addresses from company websites
 - 📧 Send automated emails to companies (optional)
 - 💾 Save results to JSON files for further analysis
 
@@ -70,7 +71,8 @@ The application will:
 2. Fetch detailed information for each company
 3. Filter active companies
 4. Save results to `data/` directory
-5. Optionally send emails to companies (if configured)
+5. Extract email addresses from company websites
+6. Optionally send emails to companies (if configured)
 
 ## Output Files
 
@@ -109,7 +111,11 @@ The email feature is optional. To use it:
 3. Generate an App Password
 4. Add credentials to `.env` file
 
-Note: The current implementation requires email addresses to be available. You may need to enhance the email extraction logic by scraping company websites.
+The application automatically extracts email addresses from company websites by:
+- Visiting each company's website URL (from Google Maps data)
+- Scanning the website content for email addresses
+- Prioritizing contact-related emails (info@, contact@, sales@, support@)
+- Filtering out invalid or placeholder emails
 
 ## Project Structure
 
@@ -121,7 +127,9 @@ textile-scrape/
 │   │   ├── googleMapsService.js    # Google Maps API integration
 │   │   └── emailService.js         # Email sending service
 │   └── utils/
-│       └── fileHandler.js          # File operations
+│       ├── fileHandler.js          # File operations
+│       ├── emailExtractor.js       # Website email extraction
+│       └── helpers.js              # Shared utility functions
 ├── data/                            # Output directory (created automatically)
 ├── .env.example                     # Environment variables template
 ├── .gitignore                       # Git ignore rules

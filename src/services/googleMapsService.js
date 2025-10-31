@@ -1,4 +1,5 @@
 const { Client } = require('@googlemaps/google-maps-services-js');
+const { delay } = require('../utils/helpers');
 
 class GoogleMapsService {
   constructor() {
@@ -74,7 +75,7 @@ class GoogleMapsService {
           });
           
           // Delay to avoid rate limiting (200ms between requests)
-          await this.delay(200);
+          await delay(200);
         } catch (error) {
           console.error(`Error getting details for ${place.name}:`, error.message);
         }
@@ -124,15 +125,6 @@ class GoogleMapsService {
       console.error(`Error getting place details for ${placeId}:`, error.message);
       return {};
     }
-  }
-
-  /**
-   * Delay helper function
-   * @param {number} ms - Milliseconds to delay
-   * @returns {Promise}
-   */
-  delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
 
