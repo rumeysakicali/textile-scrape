@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+const emailExtractor = require('../utils/emailExtractor');
 
 class EmailService {
   constructor() {
@@ -42,7 +43,10 @@ class EmailService {
     for (const company of companies) {
       try {
         // Extract email from website or skip if no contact info
-        const email = this.extractEmailFromCompany(company);
+        const email = await this.extractEmailFromCompany(company);
+        
+        // Small delay after website scraping to be respectful
+        await this.delay(1000);
         
         if (!email) {
           console.log(`⏭️  Skipping ${company.name} - no email found`);
@@ -83,23 +87,29 @@ class EmailService {
   }
 
   /**
-   * Extract email from company data
-   * TODO: Implement email extraction by scraping company websites
-   * This would require:
-   * 1. Visiting the company website
-   * 2. Scraping contact page for email addresses
-   * 3. Using pattern matching to find email addresses
-   * 
-   * For now, this returns null as email extraction requires additional
-   * web scraping implementation.
-   * 
+   * Extract email from company data by scraping their website
    * @param {Object} company - Company object
-   * @returns {string|null} Email address or null
+   * @returns {Promise<string|null>} Email address or null
    */
-  extractEmailFromCompany(company) {
-    // Placeholder: email extraction not implemented
-    // Would need web scraping library like cheerio or puppeteer
-    return null;
+  async extractEmailFromCompany(company) {
+    // If company has no website, return null
+    if (!company.website) {
+      return null;
+    }
+    
+    try {
+      console.log(`🔍 Extracting email from ${company.website}...`);
+      const email = await emailExtractor.extractFirstEmail(company.website);
+      
+      if (email) {
+        console.log(`✉️  Found email: ${email}`);
+      }
+      
+      return email;
+    } catch (error) {
+      console.error(`Error extracting email for ${company.name}:`, error.message);
+      return null;
+    }
   }
 
   /**
