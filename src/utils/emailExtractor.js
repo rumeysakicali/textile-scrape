@@ -1,5 +1,6 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
+const { delay } = require('./helpers');
 
 class EmailExtractor {
   constructor() {
@@ -66,6 +67,9 @@ class EmailExtractor {
       
       // Filter out common false positives and invalid emails
       const validEmails = uniqueEmails.filter(email => this.isValidEmail(email));
+      
+      // Small delay after successful scraping to be respectful
+      await delay(500);
       
       return validEmails;
     } catch (error) {
@@ -177,15 +181,6 @@ class EmailExtractor {
     
     // If no contact email found, return the first valid email
     return emails[0];
-  }
-
-  /**
-   * Delay helper function
-   * @param {number} ms - Milliseconds to delay
-   * @returns {Promise}
-   */
-  delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
 

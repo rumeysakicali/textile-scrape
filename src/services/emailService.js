@@ -1,5 +1,6 @@
 const nodemailer = require('nodemailer');
 const emailExtractor = require('../utils/emailExtractor');
+const { delay } = require('../utils/helpers');
 
 class EmailService {
   constructor() {
@@ -45,9 +46,6 @@ class EmailService {
         // Extract email from website or skip if no contact info
         const email = await this.extractEmailFromCompany(company);
         
-        // Small delay after website scraping to be respectful
-        await this.delay(1000);
-        
         if (!email) {
           console.log(`⏭️  Skipping ${company.name} - no email found`);
           results.details.push({
@@ -71,7 +69,7 @@ class EmailService {
         });
 
         // Delay to avoid rate limiting
-        await this.delay(2000);
+        await delay(2000);
       } catch (error) {
         console.error(`❌ Failed to send email to ${company.name}:`, error.message);
         results.failed++;
@@ -158,15 +156,6 @@ ${this.emailFromName}
     };
 
     await this.transporter.sendMail(mailOptions);
-  }
-
-  /**
-   * Delay helper function
-   * @param {number} ms - Milliseconds to delay
-   * @returns {Promise}
-   */
-  delay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
 

@@ -128,7 +128,8 @@ textile-scrape/
 │   │   └── emailService.js         # Email sending service
 │   └── utils/
 │       ├── fileHandler.js          # File operations
-│       └── emailExtractor.js       # Website email extraction
+│       ├── emailExtractor.js       # Website email extraction
+│       └── helpers.js              # Shared utility functions
 ├── data/                            # Output directory (created automatically)
 ├── .env.example                     # Environment variables template
 ├── .gitignore                       # Git ignore rules
