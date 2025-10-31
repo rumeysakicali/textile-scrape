@@ -7,7 +7,9 @@ A Node.js application that searches for textile fabric companies using Google Ma
 - 🔍 Search textile companies using Google Maps Places API
 - 📊 Collect detailed company information (address, phone, website, ratings)
 - ✅ Filter active companies based on business status and reviews
-- 🌐 Automatically extract email addresses from company websites
+- 🌐 Automatically extract email addresses from company websites (enhanced with multi-page scanning)
+- 🔄 Pagination support to get more search results (up to 60 results per keyword)
+- 🎯 Multiple keyword search for broader coverage
 - 📧 Send automated emails to companies (optional)
 - 💾 Save results to JSON files for further analysis
 
@@ -41,6 +43,9 @@ GOOGLE_MAPS_API_KEY=your_actual_api_key
 SEARCH_LOCATION=Istanbul, Turkey
 SEARCH_RADIUS=50000
 SEARCH_KEYWORD=textile fabric company
+
+# Optional: Add more keywords to find more companies (comma-separated)
+ADDITIONAL_KEYWORDS=textile manufacturer,kumaş imalat,tekstil toptan
 
 # Optional: Email configuration
 EMAIL_USER=your_email@gmail.com
@@ -91,7 +96,8 @@ Environment variables in `.env`:
 | `GOOGLE_MAPS_API_KEY` | Google Maps API key | Required |
 | `SEARCH_LOCATION` | Center location for search | Istanbul, Turkey |
 | `SEARCH_RADIUS` | Search radius in meters | 50000 |
-| `SEARCH_KEYWORD` | Search keyword | textile fabric company |
+| `SEARCH_KEYWORD` | Primary search keyword | textile fabric company |
+| `ADDITIONAL_KEYWORDS` | Additional search keywords (comma-separated) | Optional |
 | `EMAIL_USER` | Email sender address | Optional |
 | `EMAIL_PASSWORD` | Email password/app password | Optional |
 | `EMAIL_SUBJECT` | Email subject line | Business Inquiry |
@@ -113,9 +119,31 @@ The email feature is optional. To use it:
 
 The application automatically extracts email addresses from company websites by:
 - Visiting each company's website URL (from Google Maps data)
-- Scanning the website content for email addresses
-- Prioritizing contact-related emails (info@, contact@, sales@, support@)
+- Scanning multiple pages including homepage, contact page, about page (supports both English and Turkish paths)
+- Scanning the website content for email addresses from:
+  - `mailto:` links
+  - Plain text on the page (contact info, footer, etc.)
+- Prioritizing contact-related emails (info@, contact@, iletisim@, sales@, satis@, support@, destek@)
 - Filtering out invalid or placeholder emails
+- The enhanced extraction checks common contact page URLs to find more emails
+
+## Getting More Results
+
+To maximize the number of companies found:
+
+**1. Use Additional Keywords:**
+Add `ADDITIONAL_KEYWORDS` to your `.env` file with comma-separated values:
+```env
+ADDITIONAL_KEYWORDS=textile manufacturer,kumaş imalat,tekstil toptan,fabric wholesale
+```
+
+**2. The application automatically:**
+- Uses pagination to get up to 60 results per keyword (3 pages × 20 results)
+- Searches with each keyword separately
+- Removes duplicates based on place_id
+- Combines all results into a single list
+
+**3. Example: With 4 keywords, you could get up to 240 companies!**
 
 ## Project Structure
 

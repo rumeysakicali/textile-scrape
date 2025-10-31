@@ -13,6 +13,9 @@ data/
 data/*.json
 *.csv
 
+# Test files (temporary)
+test/
+
 # OS files
 .DS_Store
 Thumbs.db

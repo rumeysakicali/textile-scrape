@@ -45,21 +45,39 @@ class GoogleMapsService {
       const locationCoords = geocodeResponse.data.results[0].geometry.location;
       console.log(`Coordinates: ${locationCoords.lat}, ${locationCoords.lng}\n`);
 
-      // Search for places
-      const searchResponse = await this.client.placesNearby({
-        params: {
-          location: locationCoords,
-          radius: radius,
-          keyword: keyword,
-          key: this.apiKey,
-        },
-      });
-
-      const places = searchResponse.data.results || [];
+      // Get additional keywords from environment or use defaults
+      const additionalKeywords = process.env.ADDITIONAL_KEYWORDS 
+        ? process.env.ADDITIONAL_KEYWORDS.split(',').map(k => k.trim())
+        : [];
+      
+      // Combine main keyword with additional keywords
+      const allKeywords = [keyword, ...additionalKeywords];
+      
+      console.log(`Searching with ${allKeywords.length} keyword(s)...`);
+      
+      // Collect all places from all keywords
+      const allPlacesMap = new Map(); // Use Map to avoid duplicates based on place_id
+      
+      for (const searchKeyword of allKeywords) {
+        console.log(`\n🔍 Searching for: "${searchKeyword}"`);
+        const places = await this.searchWithPagination(locationCoords, radius, searchKeyword);
+        
+        // Add to map to avoid duplicates
+        places.forEach(place => {
+          if (!allPlacesMap.has(place.place_id)) {
+            allPlacesMap.set(place.place_id, place);
+          }
+        });
+        
+        console.log(`  ✓ Found ${places.length} results for "${searchKeyword}"`);
+      }
+      
+      const allPlaces = Array.from(allPlacesMap.values());
+      console.log(`\n📊 Total unique companies found: ${allPlaces.length}`);
       
       // Get detailed information for each place
       const companies = [];
-      for (const place of places) {
+      for (const place of allPlaces) {
         try {
           const details = await this.getPlaceDetails(place.place_id);
           companies.push({
@@ -86,6 +104,57 @@ class GoogleMapsService {
       console.error('Error searching textile companies:', error.message);
       throw error;
     }
+  }
+
+  /**
+   * Search places with pagination support
+   * @param {Object} locationCoords - Coordinates {lat, lng}
+   * @param {number} radius - Search radius in meters
+   * @param {string} keyword - Search keyword
+   * @returns {Promise<Array>} Array of places
+   */
+  async searchWithPagination(locationCoords, radius, keyword) {
+    const allPlaces = [];
+    let nextPageToken = null;
+    let pageCount = 0;
+    const maxPages = 3; // Google Places API allows up to 3 pages (60 results total per query)
+
+    do {
+      try {
+        const params = {
+          location: locationCoords,
+          radius: radius,
+          keyword: keyword,
+          key: this.apiKey,
+        };
+
+        // Add pagetoken if we have one (for subsequent pages)
+        if (nextPageToken) {
+          params.pagetoken = nextPageToken;
+          // Google requires a short delay before using next_page_token
+          await delay(2000);
+        }
+
+        const searchResponse = await this.client.placesNearby({ params });
+        const places = searchResponse.data.results || [];
+        
+        allPlaces.push(...places);
+        pageCount++;
+        
+        // Check if there are more results
+        nextPageToken = searchResponse.data.next_page_token || null;
+        
+        if (nextPageToken) {
+          console.log(`    Page ${pageCount} complete, fetching next page...`);
+        }
+        
+      } catch (error) {
+        console.error(`Error fetching page ${pageCount + 1}:`, error.message);
+        break;
+      }
+    } while (nextPageToken && pageCount < maxPages);
+
+    return allPlaces;
   }
 
   /**
