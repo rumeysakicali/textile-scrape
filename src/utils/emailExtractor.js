@@ -22,20 +22,12 @@ class EmailExtractor {
   }
 
   /**
-   * Extract emails from a company's website
-   * @param {string} websiteUrl - URL of the company website
-   * @returns {Promise<Array<string>>} Array of unique email addresses found
+   * Extract emails from a single page
+   * @param {string} url - URL to extract emails from
+   * @returns {Promise<Array<string>>} Array of email addresses found
    */
-  async extractEmailsFromWebsite(websiteUrl) {
-    if (!websiteUrl) {
-      return [];
-    }
-
+  async extractEmailsFromPage(url) {
     try {
-      // Normalize URL - ensure it has a protocol
-      const url = this.normalizeUrl(websiteUrl);
-      
-      // Fetch the website content
       const response = await axios.get(url, this.axiosConfig);
       const html = response.data;
       
@@ -61,8 +53,83 @@ class EmailExtractor {
       // Extract emails from text content using regex
       const emailsFromText = textContent.match(this.emailPattern) || [];
       
-      // Combine all emails and remove duplicates
+      // Combine all emails
       const allEmails = [...mailtoLinks, ...emailsFromText];
+      
+      return allEmails;
+    } catch (error) {
+      return [];
+    }
+  }
+
+  /**
+   * Get potential contact page URLs from a base URL
+   * @param {string} baseUrl - Base website URL
+   * @returns {Array<string>} Array of potential contact page URLs
+   */
+  getContactPageUrls(baseUrl) {
+    const normalized = this.normalizeUrl(baseUrl);
+    const baseUrlObj = new URL(normalized);
+    const base = baseUrlObj.origin;
+    
+    // Common contact page paths in both English and Turkish
+    const contactPaths = [
+      '',  // Homepage
+      '/contact',
+      '/contact-us',
+      '/contactus',
+      '/iletisim',
+      '/contact.html',
+      '/contact.php',
+      '/about',
+      '/about-us',
+      '/hakkimizda',
+      '/about.html',
+      '/footer',
+      '/company',
+      '/info',
+    ];
+    
+    return contactPaths.map(path => base + path);
+  }
+
+  /**
+   * Extract emails from a company's website (enhanced version)
+   * @param {string} websiteUrl - URL of the company website
+   * @returns {Promise<Array<string>>} Array of unique email addresses found
+   */
+  async extractEmailsFromWebsite(websiteUrl) {
+    if (!websiteUrl) {
+      return [];
+    }
+
+    try {
+      const allEmails = [];
+      
+      // Get potential contact page URLs
+      const contactUrls = this.getContactPageUrls(websiteUrl);
+      
+      // Extract emails from multiple pages
+      for (const url of contactUrls) {
+        try {
+          const emails = await this.extractEmailsFromPage(url);
+          allEmails.push(...emails);
+          
+          // If we found emails, we can be less aggressive
+          if (emails.length > 0) {
+            // Small delay between requests
+            await delay(300);
+          } else {
+            // Shorter delay if no emails found
+            await delay(100);
+          }
+        } catch (error) {
+          // Continue with next URL
+          continue;
+        }
+      }
+      
+      // Remove duplicates
       const uniqueEmails = [...new Set(allEmails)];
       
       // Filter out common false positives and invalid emails
@@ -162,14 +229,22 @@ class EmailExtractor {
       return null;
     }
     
-    // Prioritize emails that look like contact emails
+    console.log(`📧 Found ${emails.length} email(s) on website`);
+    
+    // Prioritize emails that look like contact emails (enhanced list)
     const contactEmailPatterns = [
       /^info@/i,
       /^contact@/i,
+      /^iletisim@/i,  // Turkish for contact
       /^sales@/i,
+      /^satis@/i,  // Turkish for sales
       /^support@/i,
+      /^destek@/i,  // Turkish for support
       /^hello@/i,
       /^inquiry@/i,
+      /^business@/i,
+      /^office@/i,
+      /^admin@/i,
     ];
     
     for (const pattern of contactEmailPatterns) {
